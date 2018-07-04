@@ -1,6 +1,6 @@
-# MongoChat
+# Bid placement Mongo
 
-Simple chat app that uses MongoDB and Socket.io
+Simple bidding app that uses MongoDB and Socket.io
 
 ### Version
 1.0.0
