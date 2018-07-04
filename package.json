@@ -1,5 +1,5 @@
 {
-  "name": "mongochat",
+  "name": "bidtest",
   "version": "1.0.0",
   "description": "Simple chat app using sockets",
   "main": "server.js",
@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "mongodb": "^2.2.30",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "toastr": "^2.1.4"
   }
 }

@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="toastr.css" rel="stylesheet"/>
+
     <title>Place bid</title>
     <style>
-        #messages{height:300px;}
+        #new_bids{height:300px;}
     </style>
 </head>
 <body>
@@ -19,16 +21,17 @@
                     <button id="clear" class="btn btn-danger">Clear</button>
                 </h1>
                 <div id="status"></div>
-                <div id="chat">
+                <div id="bid">
                     <input type="text" id="username" class="form-control" placeholder="Enter username...">
                     <br>
                     <div class="card">
-                        <div id="messages" class="card-block">
+                        <div id="new_bids" class="card-block">
 
                         </div>
                     </div>
                     <br>
                     <textarea id="textarea" class="form-control" placeholder="Place bid..."></textarea>
+                    <p> Current bid: <span id = current>0</span> Euro </p>
                 </div>
             </div>
         </div>
@@ -44,7 +47,7 @@
 
             // Get Elements
             var status = element('status');
-            var messages = element('messages');
+            var new_bids = element('new_bids');
             var textarea = element('textarea');
             var username = element('username');
 
@@ -64,6 +67,7 @@
                 }
             }
 
+
             // Connect to socket.io
             var socket = io.connect('http://127.0.0.1:4000');
 
@@ -76,21 +80,36 @@
                     //console.log(data);
                     if(data.length){
                         for(var x = 0;x < data.length;x++){
-                            // Build out message div
-                            var message = document.createElement('div');
-                            message.setAttribute('class', 'chat-message');
-                            message.textContent = data[x].auction_name+": "+data[x].message;
-                            messages.appendChild(message);
-                            //messages.appendChild(time);
-                            messages.insertBefore(message, messages.firstChild);
+                            // Build out new_bid div
+                            currentPrice = parseInt(new_bid);
+                            var new_bid = document.createElement('div');
+                            new_bid.setAttribute('class', 'bid-new_bid');
+
+                            var bid = document.getElementById('current').innerHTML;
+                            var currentPrice = Number(bid);
+                            if(currentPrice < Number(data[x].new_bid)){
+                                currentPrice = Number(data[x].new_bid);
+                                document.getElementById('current').innerHTML = currentPrice.toString();
+                                new_bid.textContent = data[x].auction_name+": "+data[x].new_bid;
+                                new_bids.appendChild(new_bid);
+                                //new_bids.appendChild(time);
+                                new_bids.insertBefore(new_bid, new_bids.firstChild);
+                              }
+                              else{
+                                console.log("The value is too low");
+                                toastr.warning("The value is too low");
+                              }
+
+
+
                         }
                     }
                 });
 
                 // Get Status From Server
                 socket.on('status', function(data){
-                    // get message status
-                    setStatus((typeof data === 'object')? data.message : data);
+                    // get new_bid status
+                    setStatus((typeof data === 'object')? data.new_bid : data);
 
                     // If status is clear, clear text
                     if(data.clear){
@@ -104,21 +123,21 @@
                         // Emit to server input
                         socket.emit('input', {
                             auction_name:username.value,
-                            message:textarea.value
+                            new_bid:textarea.value
                         });
 
                         event.preventDefault();
                     }
                 })
 
-                // Handle Chat Clear
+                // Handle bid Clear
                 clearBtn.addEventListener('click', function(){
                     socket.emit('clear');
                 });
 
-                // Clear Message
+                // Clear new_bid
                 socket.on('cleared', function(){
-                    messages.textContent = '';
+                    new_bids.textContent = '';
                 });
             }
 
